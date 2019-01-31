@@ -1,0 +1,32 @@
+{
+    "name": "wehaa/laravel-scout-elasticsearch",
+    "description": "Elasticsearch Driver for Laravel Scout",
+    "keywords": ["laravel", "scout", "elasticsearch"],
+    "require": {
+        "php": ">=7.1",
+        "laravel/scout": "^6.0",
+        "elasticsearch/elasticsearch": "^6.0"
+    },
+    "require-dev": {
+        "algolia/algoliasearch-client-php": "^1.10",
+        "mockery/mockery": "^1.2",
+        "phpunit/phpunit": "~6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Wehaa\\Search\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Wehaa\\Search\\Test\\": "tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Wehaa\\Search\\ElasticServiceProvider"
+            ]
+        }
+    }
+}
