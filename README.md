@@ -1,7 +1,8 @@
 # Laravel Scout Elasticsearch Driver
 
-This package makes is the [Elasticsearch](https://www.elastic.co/products/elasticsearch) driver for Laravel Scout.
-supporting Laravel and 5.7+
+This package makes use of the [Elasticsearch](https://www.elastic.co/products/elasticsearch) driver for Laravel Scout.
+
+Supporting Laravel and 5.7+
 
 ## Installation
 
