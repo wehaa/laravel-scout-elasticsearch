@@ -1,6 +1,6 @@
 <?php
 
-namespace Wehaa\Search\Engines;
+namespace Wehaa\ScoutElasticsearch\Engines;
 
 use Laravel\Scout\Builder;
 use Laravel\Scout\Engines\Engine;

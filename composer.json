@@ -8,24 +8,23 @@
         "elasticsearch/elasticsearch": "^6.0"
     },
     "require-dev": {
-        "algolia/algoliasearch-client-php": "^1.10",
         "mockery/mockery": "^1.2",
         "phpunit/phpunit": "~6.0"
     },
     "autoload": {
         "psr-4": {
-            "Wehaa\\Search\\": "src/"
+            "Wehaa\\ScoutElasticsearch\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Wehaa\\Search\\Test\\": "tests"
+            "Wehaa\\ScoutElasticsearch\\Test\\": "tests"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Wehaa\\Search\\ElasticServiceProvider"
+                "Wehaa\\ScoutElasticsearch\\ScoutElasticsearchServiceProvider"
             ]
         }
     }

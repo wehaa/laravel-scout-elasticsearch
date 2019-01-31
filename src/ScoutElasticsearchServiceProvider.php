@@ -1,14 +1,14 @@
 <?php
 
-namespace Wehaa\Search;
+namespace Wehaa\ScoutElasticsearch;
 
 use Elasticsearch\ClientBuilder;
 use Laravel\Scout\EngineManager;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
-use Wehaa\Search\Engines\ElasticEngine;
+use Wehaa\ScoutElasticsearch\Engines\ElasticEngine;
 
-class ElasticServiceProvider extends ServiceProvider
+class ScoutElasticsearchServiceProvider extends ServiceProvider
 {
 
     public function boot()

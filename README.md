@@ -72,7 +72,7 @@ ELASTICSEARCH_PORT=9200
 ## Usage:
 Now you can use Laravel Scout as described in the [official documentation](https://laravel.com/docs/5.7/scout)
 
-###Batch Import
+### Batch Import
 If you are installing Scout into an existing project, you may already have database records you need to import into your search driver. Scout provides an import Artisan command that you may use to import all of your existing records into your search indexes:
 
 ```bash

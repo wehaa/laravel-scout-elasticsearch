@@ -1,10 +1,10 @@
 <?php
 
-namespace Wehaa\Search\Test;
+namespace Wehaa\ScoutElasticsearch\Test;
 
 use Mockery;
 use Laravel\Scout\Builder;
-use Wehaa\Search\Engines\ElasticEngine;
+use Wehaa\ScoutElasticsearch\Engines\ElasticEngine;
 use Illuminate\Database\Eloquent\Collection;
 class ElasticEngineTest extends \PHPUnit\Framework\TestCase
 {

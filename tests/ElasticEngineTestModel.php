@@ -1,6 +1,6 @@
 <?php
 
-namespace Wehaa\Search\Test;
+namespace Wehaa\ScoutElasticsearch\Test;
 
 use Laravel\Scout\Searchable;
 use \Illuminate\Database\Eloquent\Model;
