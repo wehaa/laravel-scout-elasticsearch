@@ -21,7 +21,7 @@ class ElasticEngine extends Engine
     /**
      * Create a new engine instance.
      *
-     * @param \Elasticsearch\Client $elastic
+     * @param  \Elasticsearch\Client $elastic
      * @return void
      */
     public function __construct(Elastic $elastic)
@@ -32,7 +32,7 @@ class ElasticEngine extends Engine
     /**
      * Update the given model in the index.
      *
-     * @param \Illuminate\Database\Eloquent\Collection $models
+     * @param  \Illuminate\Database\Eloquent\Collection $models
      * @throws \Elasticsearch\Common\Exceptions\ElasticsearchException
      * @return void
      */
@@ -48,20 +48,22 @@ class ElasticEngine extends Engine
             $models->each->pushSoftDeleteMetadata();
         }
         
-        $models->map(function ($model) use (&$params, $index){
-            $array = array_merge($model->toSearchableArray(), $model->scoutMetadata());
+        $models->map(
+            function ($model) use (&$params, $index) {
+                $array = array_merge($model->toSearchableArray(), $model->scoutMetadata());
 
-            if (!empty($array)) {
-                $index['_id'] = $model->getScoutKey();
-                $params['body'][] = [
+                if (!empty($array)) {
+                    $index['_id'] = $model->getScoutKey();
+                    $params['body'][] = [
                     'update' => $index
-                ];
-                $params['body'][] = [
+                    ];
+                    $params['body'][] = [
                     'doc' => $array,
                     'doc_as_upsert' => true,
-                ];
+                    ];
+                }
             }
-        });
+        );
         if (! empty($params)) {
             $this->elastic->bulk($params);
         }
@@ -70,19 +72,21 @@ class ElasticEngine extends Engine
     /**
      * Remove the given model from the index.
      *
-     * @param  \Illuminate\Database\Eloquent\Collection  $models
+     * @param  \Illuminate\Database\Eloquent\Collection $models
      * @return void
      */
     public function delete($models)
     {
         $index = $this->initIndex($models->first());
         $params = [];
-        $models->map(function ($model) use (&$params, $index) {
-            $index['_id'] = $model->getScoutKey();
-            $params['body'][] = [
+        $models->map(
+            function ($model) use (&$params, $index) {
+                $index['_id'] = $model->getScoutKey();
+                $params['body'][] = [
                 'delete' => $index
-            ];
-        });
+                ];
+            }
+        );
         if (! empty($params)) {
             $this->elastic->bulk($params);
         }
@@ -91,38 +95,44 @@ class ElasticEngine extends Engine
     /**
      * Perform the given search on the engine.
      *
-     * @param  \Laravel\Scout\Builder  $builder
+     * @param  \Laravel\Scout\Builder $builder
      * @return mixed
      */
     public function search(Builder $builder)
     {
-        return $this->performSearch($builder, array_filter([
-            'numericFilters' => $this->filters($builder),
-            'hitsPerPage' => $builder->limit,
-        ]));
+        return $this->performSearch(
+            $builder, array_filter(
+                [
+                'numericFilters' => $this->filters($builder),
+                'hitsPerPage' => $builder->limit,
+                ]
+            )
+        );
     }
 
     /**
      * Perform the given search on the engine.
      *
-     * @param  \Laravel\Scout\Builder  $builder
-     * @param  int  $perPage
-     * @param  int  $page
+     * @param  \Laravel\Scout\Builder $builder
+     * @param  int                    $perPage
+     * @param  int                    $page
      * @return mixed
      */
     public function paginate(Builder $builder, $perPage, $page)
     {
-        return $this->performSearch($builder, [
+        return $this->performSearch(
+            $builder, [
             'numericFilters' => $this->filters($builder),
             'hitsPerPage' => $perPage,
             'page' => $page - 1,
-        ]);
+            ]
+        );
     }
 
     /**
      * Pluck and return the primary keys of the given results.
      *
-     * @param  mixed  $results
+     * @param  mixed $results
      * @return \Illuminate\Support\Collection
      */
     public function mapIds($results)
@@ -133,9 +143,9 @@ class ElasticEngine extends Engine
     /**
      * Map the given results to instances of the given model.
      *
-     * @param  \Laravel\Scout\Builder  $builder
-     * @param  mixed  $results
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  \Laravel\Scout\Builder              $builder
+     * @param  mixed                               $results
+     * @param  \Illuminate\Database\Eloquent\Model $model
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public function map(Builder $builder, $results, $model)
@@ -146,15 +156,17 @@ class ElasticEngine extends Engine
         $keys = collect($results['hits']['hits'])->pluck('_id')->values()->all();
         return $model->getScoutModelsByIds(
             $builder, $keys
-            )->filter(function ($model) use ($keys) {
-                return in_array($model->getScoutKey(), $keys);
-            });
+        )->filter(
+            function ($model) use ($keys) {
+                    return in_array($model->getScoutKey(), $keys);
+            }
+        );
     }
 
     /**
      * Get the total count from a raw result returned by the engine.
      *
-     * @param  mixed  $results
+     * @param  mixed $results
      * @return int
      */
     public function getTotalCount($results)
@@ -165,12 +177,11 @@ class ElasticEngine extends Engine
     /**
      * Flush all of the model's records from the engine.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  \Illuminate\Database\Eloquent\Model $model
      * @return void
      */
     public function flush($model)
     {
-        //删除所有数据
         $index = $this->initIndex($model);
         $params = [
             'index' => $index['_index'],
@@ -187,7 +198,7 @@ class ElasticEngine extends Engine
     /**
      * Drop index from the engine.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  \Illuminate\Database\Eloquent\Model $model
      * @return void
      */
     public function drop($model)
@@ -203,7 +214,7 @@ class ElasticEngine extends Engine
     /**
      * Determine if the given model uses soft deletes.
      *
-     * @param \Illuminate\Database\Eloquent\Model $model
+     * @param  \Illuminate\Database\Eloquent\Model $model
      * @return bool
      */
     protected function usesSoftDelete($model)
@@ -229,24 +240,26 @@ class ElasticEngine extends Engine
     /**
      * Get the filter array for the query.
      *
-     * @param  \Laravel\Scout\Builder  $builder
+     * @param  \Laravel\Scout\Builder $builder
      * @return array
      */
     protected function filters(Builder $builder)
     {
-        return collect($builder->wheres)->map(function ($value, $key) {
-            if (is_array($value)) {
-                return ['terms' => [$key => $value]];
+        return collect($builder->wheres)->map(
+            function ($value, $key) {
+                if (is_array($value)) {
+                    return ['terms' => [$key => $value]];
+                }
+                return ['match_phrase' => [$key => $value]];
             }
-            return ['match_phrase' => [$key => $value]];
-        })->values()->all();
+        )->values()->all();
     }
     
     /**
      * Perform the given search on the engine.
      *
-     * @param  \Laravel\Scout\Builder  $builder
-     * @param  array  $options
+     * @param  \Laravel\Scout\Builder $builder
+     * @param  array                  $options
      * @return mixed
      */
     protected function performSearch(Builder $builder, array $options = [])
@@ -280,8 +293,10 @@ class ElasticEngine extends Engine
             $params['body']['size'] = $options['size'];
         }
         if (isset($options['numericFilters']) && count($options['numericFilters'])) {
-            $params['body']['query']['bool']['must'] = array_merge($params['body']['query']['bool']['must'],
-                $options['numericFilters']);
+            $params['body']['query']['bool']['must'] = array_merge(
+                $params['body']['query']['bool']['must'],
+                $options['numericFilters']
+            );
         }
         if ($builder->callback) {
             return call_user_func(
@@ -289,7 +304,7 @@ class ElasticEngine extends Engine
                 $this->elastic,
                 $builder->query,
                 $params
-                );
+            );
         }
         return $this->elastic->search($params);
     }
@@ -305,8 +320,10 @@ class ElasticEngine extends Engine
         if (count($builder->orders) == 0) {
             return null;
         }
-        return collect($builder->orders)->map(function($order) {
-            return [$order['column'] => $order['direction']];
-        })->toArray();
+        return collect($builder->orders)->map(
+            function ($order) {
+                return [$order['column'] => $order['direction']];
+            }
+        )->toArray();
     }
 }

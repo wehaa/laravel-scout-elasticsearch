@@ -13,16 +13,18 @@ class ScoutElasticsearchServiceProvider extends ServiceProvider
 
     public function boot()
     {
-        resolve(EngineManager::class)->extend('elasticsearch', function () {
-            $es_config = config::get('scout.elasticsearch');
-            return new ElasticEngine(ClientBuilder::create()->setHosts($es_config['hosts'])
-                ->setRetries($es_config['retries'])
-                ->build());
-        });
+        resolve(EngineManager::class)->extend(
+            'elasticsearch', function () {
+
+                $es_config = config('scout.elasticsearch');
+
+                return new ElasticEngine(
+                    ClientBuilder::create()->setHosts($es_config['hosts'])
+                    ->setRetries($es_config['retries'])
+                    ->build()
+                );
+            }
+        );
     }
     
-    public function register()
-    {
-        //
-    }
 }
