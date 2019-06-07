@@ -17,7 +17,7 @@ class ScoutElasticsearchServiceProvider extends ServiceProvider
             'elasticsearch', function () {
 
                 $es_config = config('scout.elasticsearch');
-
+                
                 return new ElasticEngine(
                     ClientBuilder::create()->setHosts($es_config['hosts'])
                     ->setRetries($es_config['retries'])

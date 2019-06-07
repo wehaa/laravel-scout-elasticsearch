@@ -8,6 +8,9 @@ use Elasticsearch\Client as Elastic;
 use \Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use App\Models\Web\Community;
+
+
 class ElasticEngine extends Engine
 {
 
@@ -26,6 +29,7 @@ class ElasticEngine extends Engine
      */
     public function __construct(Elastic $elastic)
     {
+        
         $this->elastic = $elastic;
     }
 
@@ -47,26 +51,28 @@ class ElasticEngine extends Engine
         if ($this->usesSoftDelete($models->first()) && config('scout.soft_delete', false)) {
             $models->each->pushSoftDeleteMetadata();
         }
-        
+            
         $models->map(
             function ($model) use (&$params, $index) {
                 $array = array_merge($model->toSearchableArray(), $model->scoutMetadata());
 
                 if (!empty($array)) {
                     $index['_id'] = $model->getScoutKey();
-                    $params['body'][] = [
-                    'update' => $index
-                    ];
-                    $params['body'][] = [
-                    'doc' => $array,
-                    'doc_as_upsert' => true,
-                    ];
+                    $params["index"] = $index['_index'];
+                    $params["type"] = 'doc'; 
+                    $params["id"] = $index['_id'];
+                    $params['body'] = ["doc" => $array, "doc_as_upsert" => true];
                 }
             }
         );
+
+      
+        
         if (! empty($params)) {
-            $this->elastic->bulk($params);
+            // $this->elastic->delete(["type" => $params['type'],  "index" => $params['index'], "id"=>$params['id']]);
+            $this->elastic->update($params);
         }
+
     }
 
     /**
@@ -100,6 +106,8 @@ class ElasticEngine extends Engine
      */
     public function search(Builder $builder)
     {
+
+
         return $this->performSearch(
             $builder, array_filter(
                 [
@@ -120,6 +128,8 @@ class ElasticEngine extends Engine
      */
     public function paginate(Builder $builder, $perPage, $page)
     {
+
+        
         return $this->performSearch(
             $builder, [
             'numericFilters' => $this->filters($builder),
@@ -150,17 +160,25 @@ class ElasticEngine extends Engine
      */
     public function map(Builder $builder, $results, $model)
     {
+
         if ($results['hits']['total'] === 0) {
             return $model->newCollection();
         }
+
         $keys = collect($results['hits']['hits'])->pluck('_id')->values()->all();
-        return $model->getScoutModelsByIds(
-            $builder, $keys
-        )->filter(
-            function ($model) use ($keys) {
-                    return in_array($model->getScoutKey(), $keys);
-            }
-        );
+
+        if(method_exists($model, "multipleAs")){
+            return collect($results['hits']['hits']);
+        }else{        
+            return $model->getScoutModelsByIds(
+                $builder, $keys
+            )->filter(
+                function ($model) use ($keys) {
+                        return in_array($model->getScoutKey(), $keys);
+                }
+            );
+        }
+
     }
 
     /**
@@ -229,7 +247,13 @@ class ElasticEngine extends Engine
      */
     protected function initIndex(Model $model)
     {
-        $index = $model->searchableAs();
+
+        if(method_exists($model, "multipleAs")){
+            $index = $model->multipleAs();
+        }else{
+            $index = $model->searchableAs();
+        }
+
         $params = [
             '_index' => $index,
             '_type' => $index,
@@ -252,7 +276,7 @@ class ElasticEngine extends Engine
                 }
                 return ['match_phrase' => [$key => $value]];
             }
-        )->values()->all();
+        )->values()->all();       
     }
     
     /**
@@ -264,10 +288,13 @@ class ElasticEngine extends Engine
      */
     protected function performSearch(Builder $builder, array $options = [])
     {
+
+
         $index = $this->initIndex($builder->model);
+        
         $params = [
             'index' => $index['_index'],
-            'type' => $index['_type'],
+            'type' => "doc",
             'body' => [
                 'query' => [
                     'bool' => [
@@ -298,6 +325,7 @@ class ElasticEngine extends Engine
                 $options['numericFilters']
             );
         }
+        
         if ($builder->callback) {
             return call_user_func(
                 $builder->callback,
@@ -306,6 +334,7 @@ class ElasticEngine extends Engine
                 $params
             );
         }
+
         return $this->elastic->search($params);
     }
     
