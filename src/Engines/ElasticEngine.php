@@ -241,11 +241,11 @@ class ElasticEngine extends Engine
     }
 
     /**
-     * Config index and type with model
+     * Config if exis multi index and type with model
      *
      * @param string $index
      */
-    protected function initIndex(Model $model)
+    protected function multiIndex(Model $model)
     {
 
         if(method_exists($model, "multipleAs")){
@@ -254,6 +254,22 @@ class ElasticEngine extends Engine
             $index = $model->searchableAs();
         }
 
+        $params = [
+            '_index' => $index,
+            '_type' => $index,
+        ];
+        return $params;
+    }
+    
+
+     /**
+     * Config index and type with model
+     *
+     * @param string $index
+     */
+    protected function initIndex(Model $model)
+    {
+        $index = $model->searchableAs();
         $params = [
             '_index' => $index,
             '_type' => $index,
@@ -290,7 +306,7 @@ class ElasticEngine extends Engine
     {
 
 
-        $index = $this->initIndex($builder->model);
+        $index = $this->multiIndex($builder->model);
         
         $params = [
             'index' => $index['_index'],
