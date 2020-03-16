@@ -168,7 +168,7 @@ class ElasticEngine extends Engine
         $keys = collect($results['hits']['hits'])->pluck('_id')->values()->all();
 
         if(method_exists($model, "multipleAs")){
-            return collect($results['hits']['hits']);
+            return collect($results);
         }else{        
             return $model->getScoutModelsByIds(
                 $builder, $keys
