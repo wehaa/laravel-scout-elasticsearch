@@ -57,22 +57,18 @@ class ElasticEngine extends Engine
                 $array = array_merge($model->toSearchableArray(), $model->scoutMetadata());
 
                 if (!empty($array)) {
+                    $object = [];
                     $index['_id'] = $model->getScoutKey();
-                    $params["index"] = $index['_index'];
-                    $params["type"] = 'doc'; 
-                    $params["id"] = $index['_id'];
-                    $params['body'] = ["doc" => $array, "doc_as_upsert" => true];
+                    $object["index"] = $index['_index'];
+                    $object["type"] = 'doc'; 
+                    $object["id"] = $index['_id'];
+                    $object['body'] = ["doc" => $array, "doc_as_upsert" => true];
+                    $params[] = $object;
+                    $this->elastic->update($object);
+
                 }
             }
         );
-
-      
-        
-        if (! empty($params)) {
-            // $this->elastic->delete(["type" => $params['type'],  "index" => $params['index'], "id"=>$params['id']]);
-            $this->elastic->update($params);
-        }
-
     }
 
     /**
