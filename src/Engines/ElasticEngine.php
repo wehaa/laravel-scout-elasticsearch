@@ -268,7 +268,7 @@ class ElasticEngine extends Engine
         $index = $model->searchableAs();
         $params = [
             '_index' => $index,
-            '_type' => $index,
+            '_type' => 'doc',
         ];
         return $params;
     }
