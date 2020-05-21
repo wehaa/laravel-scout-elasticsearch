@@ -29,7 +29,7 @@ class ElasticEngine extends Engine
      */
     public function __construct(Elastic $elastic)
     {
-        
+
         $this->elastic = $elastic;
     }
 
@@ -51,7 +51,7 @@ class ElasticEngine extends Engine
         if ($this->usesSoftDelete($models->first()) && config('scout.soft_delete', false)) {
             $models->each->pushSoftDeleteMetadata();
         }
-            
+
         $models->map(
             function ($model) use (&$params, $index) {
                 $array = array_merge($model->toSearchableArray(), $model->scoutMetadata());
@@ -60,12 +60,11 @@ class ElasticEngine extends Engine
                     $object = [];
                     $index['_id'] = $model->getScoutKey();
                     $object["index"] = $index['_index'];
-                    $object["type"] = 'doc'; 
+                    $object["type"] = 'doc';
                     $object["id"] = $index['_id'];
                     $object['body'] = ["doc" => $array, "doc_as_upsert" => true];
                     $params[] = $object;
                     $this->elastic->update($object);
-
                 }
             }
         );
@@ -85,11 +84,11 @@ class ElasticEngine extends Engine
             function ($model) use (&$params, $index) {
                 $index['_id'] = $model->getScoutKey();
                 $params['body'][] = [
-                'delete' => $index
+                    'delete' => $index
                 ];
             }
         );
-        if (! empty($params)) {
+        if (!empty($params)) {
             $this->elastic->bulk($params);
         }
     }
@@ -105,10 +104,11 @@ class ElasticEngine extends Engine
 
 
         return $this->performSearch(
-            $builder, array_filter(
+            $builder,
+            array_filter(
                 [
-                'numericFilters' => $this->filters($builder),
-                'hitsPerPage' => $builder->limit,
+                    'numericFilters' => $this->filters($builder),
+                    'hitsPerPage' => $builder->limit,
                 ]
             )
         );
@@ -125,12 +125,13 @@ class ElasticEngine extends Engine
     public function paginate(Builder $builder, $perPage, $page)
     {
 
-        
+
         return $this->performSearch(
-            $builder, [
-            'numericFilters' => $this->filters($builder),
-            'hitsPerPage' => $perPage,
-            'page' => $page - 1,
+            $builder,
+            [
+                'numericFilters' => $this->filters($builder),
+                'hitsPerPage' => $perPage,
+                'page' => $page - 1,
             ]
         );
     }
@@ -163,18 +164,18 @@ class ElasticEngine extends Engine
 
         $keys = collect($results['hits']['hits'])->pluck('_id')->values()->all();
 
-        if(method_exists($model, "multipleAs")){
+        if (method_exists($model, "multipleAs")) {
             return collect($results);
-        }else{        
+        } else {
             return $model->getScoutModelsByIds(
-                $builder, $keys
+                $builder,
+                $keys
             )->filter(
                 function ($model) use ($keys) {
-                        return in_array($model->getScoutKey(), $keys);
+                    return in_array($model->getScoutKey(), $keys);
                 }
             );
         }
-
     }
 
     /**
@@ -186,6 +187,22 @@ class ElasticEngine extends Engine
     public function getTotalCount($results)
     {
         return $results['hits']['total'];
+    }
+
+    /**
+     * Create an index
+     *
+     * @param  $index
+     * @return void
+     */
+    public function createIndex($index, $map_file)
+    {
+        $mapping = json_decode(file_get_contents(database_path($map_file)), true);
+        $params = [
+            'index' => $index,
+            'body' => $mapping
+        ];
+        return $this->elastic->indices()->create($params);
     }
 
     /**
@@ -224,7 +241,7 @@ class ElasticEngine extends Engine
         ];
         return $this->elastic->indices()->delete($params);
     }
-    
+
     /**
      * Determine if the given model uses soft deletes.
      *
@@ -244,9 +261,9 @@ class ElasticEngine extends Engine
     protected function multiIndex(Model $model)
     {
 
-        if(method_exists($model, "multipleAs")){
+        if (method_exists($model, "multipleAs")) {
             $index = $model->multipleAs();
-        }else{
+        } else {
             $index = $model->searchableAs();
         }
 
@@ -256,9 +273,9 @@ class ElasticEngine extends Engine
         ];
         return $params;
     }
-    
 
-     /**
+
+    /**
      * Config index and type with model
      *
      * @param string $index
@@ -272,7 +289,7 @@ class ElasticEngine extends Engine
         ];
         return $params;
     }
-    
+
     /**
      * Get the filter array for the query.
      *
@@ -288,9 +305,9 @@ class ElasticEngine extends Engine
                 }
                 return ['match_phrase' => [$key => $value]];
             }
-        )->values()->all();       
+        )->values()->all();
     }
-    
+
     /**
      * Perform the given search on the engine.
      *
@@ -303,7 +320,7 @@ class ElasticEngine extends Engine
 
 
         $index = $this->multiIndex($builder->model);
-        
+
         $params = [
             'index' => $index['_index'],
             'type' => "doc",
@@ -321,7 +338,7 @@ class ElasticEngine extends Engine
                 ]
             ]
         ];
-        
+
         if ($sort = $this->sort($builder)) {
             $params['body']['sort'] = $sort;
         }
@@ -337,7 +354,7 @@ class ElasticEngine extends Engine
                 $options['numericFilters']
             );
         }
-        
+
         if ($builder->callback) {
             return call_user_func(
                 $builder->callback,
@@ -349,7 +366,7 @@ class ElasticEngine extends Engine
 
         return $this->elastic->search($params);
     }
-    
+
     /**
      * Generates the sort if theres any.
      *
