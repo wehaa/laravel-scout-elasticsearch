@@ -195,11 +195,11 @@ class ElasticEngine extends Engine
      * @param  $index
      * @return void
      */
-    public function createIndex($index, $map_file)
+    public function createIndex($name, array $options = [])
     {
-        $mapping = json_decode(file_get_contents(database_path($map_file)), true);
+        $mapping = json_decode(file_get_contents(database_path($options['map_file'])), true);
         $params = [
-            'index' => $index,
+            'index' => $name,
             'body' => $mapping
         ];
         return $this->elastic->indices()->create($params);
@@ -384,4 +384,27 @@ class ElasticEngine extends Engine
             }
         )->toArray();
     }
+
+
+	/**
+	 * Map the given results to instances of the given model via a lazy collection.
+	 *
+	 * @param Builder $builder
+	 * @param mixed $results
+	 * @param Model $model
+	 *
+	 * @return \Illuminate\Support\LazyCollection
+	 */
+	function lazyMap(Builder $builder, $results, $model) {
+	}
+	
+	/**
+	 * Delete a search index.
+	 *
+	 * @param string $name
+	 *
+	 * @return mixed
+	 */
+	function deleteIndex($name) {
+	}
 }
