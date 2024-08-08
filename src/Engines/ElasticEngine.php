@@ -406,5 +406,9 @@ class ElasticEngine extends Engine
 	 * @return mixed
 	 */
 	function deleteIndex($name) {
+        $params = [
+            'index' => $name,
+        ];
+        return $this->elastic->indices()->delete($params);
 	}
 }
